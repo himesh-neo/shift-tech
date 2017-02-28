@@ -1,5 +1,5 @@
 {
-  "name": "Shift Technologies Web Application",
+  "name": "ShiftTechnologiesWebApplication",
   "author": "Sagarsingh, Himesh",
   "scripts": {
     "start": "node server/server.js"
