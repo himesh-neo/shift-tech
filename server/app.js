@@ -21,6 +21,7 @@ var app = express();
 
 // require routes
 var routes = require('./routes/api.js');
+var oauthCallbacks = require('./routes/oauthCallbacks.js')
 
 // define middleware
 app.use(express.static(path.join(__dirname, '../client')));
@@ -44,6 +45,8 @@ passport.deserializeUser(User.deserializeUser());
 
 // routes
 app.use('/user/', routes);
+
+app.use('/oauth', oauthCallbacks)
 
 app.get('/', function(req, res) {
   res.sendFile(path.join(__dirname, '../client', 'index.html'));
