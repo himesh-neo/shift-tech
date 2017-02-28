@@ -21,6 +21,7 @@ var app = express();
 
 // require routes
 var routes = require('./routes/api.js');
+var fbroutes = require('./routes/facebookRoute.js');
 
 // define middleware
 app.use(express.static(path.join(__dirname, '../client')));
@@ -33,6 +34,7 @@ app.use(require('express-session')({
     resave: false,
     saveUninitialized: false
 }));
+require('./config/passport')(passport);
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -44,6 +46,7 @@ passport.deserializeUser(User.deserializeUser());
 
 // routes
 app.use('/user/', routes);
+app.use(fbroutes);
 
 app.get('/', function(req, res) {
   res.sendFile(path.join(__dirname, '../client', 'index.html'));

@@ -7,10 +7,11 @@ var Account = new Schema({
               type: mongoose.Schema.Types.ObjectId,
               ref: 'User'
           },
-  token : String,
+  facebookbookAccessToken : String,
   type : String,
+  facebookId : String,
   expire : Date,
-  createdOn : Date
+  createdOn : {type: Date, default: Date.now}
 });
 
 module.exports = mongoose.model('account', Account);
