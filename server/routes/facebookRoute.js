@@ -7,6 +7,15 @@ var UserController = require('../controllers/userCtrl.js');
 
 router.get('/auth/facebook', passport.authenticate('facebook', { scope : 'email' }));
 
+router.get('/auth/twitter', passport.authenticate('twitter'));
+
+router.get('/auth/twitter/callback',
+  passport.authenticate('twitter', {
+      successRedirect : '/profile',
+      failureRedirect : '/'
+  })
+);
+
 router.get('/auth/facebook/callback',
        passport.authenticate('facebook', {
            successRedirect : '/',

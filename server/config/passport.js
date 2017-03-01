@@ -2,6 +2,7 @@
 var UserAccount       = require('../models/account.js');
 var User = require('../models/user.js');
 var FacebookStrategy = require('passport-facebook').Strategy;
+var TwitterStrategy  = require('passport-twitter').Strategy;
 
 // load the auth variables
 var configAuth = require('./auth');
@@ -82,5 +83,37 @@ module.exports = function(passport) {
         });
 
     }));
+
+
+    //////////////////////// TWITTER AUTH /////////////////////////
+    passport.use(new TwitterStrategy({
+
+        consumerKey       : configAuth.twitterAuth.consumerKey,
+        consumerSecret    : configAuth.twitterAuth.consumerSecret,
+        callbackURL       : configAuth.twitterAuth.callbackURL,
+        passReqToCallback : true
+
+    },
+    function(req, token, tokenSecret, profile, done) {
+        var newUserAccount = new UserAccount();
+
+        // set all of the facebook information in our user model
+        newUserAccount.profile = profile
+        newUserAccount.profile.tokenSecret = tokenSecret
+        newUserAccount.accessToken = token; // we will save the token that facebook provides to the user
+        newUserAccount.userid = req.user;
+        newUserAccount.type = 'Twitter';
+
+        newUserAccount.save(function(err) {
+            if (err)
+                throw err;
+
+            // if successful, return the new user
+            return done(null, req.user);
+        });
+
+
+    }));
+
 
 };
