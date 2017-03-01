@@ -39,7 +39,8 @@ function setServiceConf(params){
 function setFacebookServiceConf(params){
   serviceClass = Facebook;
   serviceConf = {
-    email: request.body['sessionId']
+  email: request.body['sessionId'],
+  content: params['content']
   };
 }
 
