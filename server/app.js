@@ -11,7 +11,7 @@ var passport = require('passport');
 var localStrategy = require('passport-local' ).Strategy;
 
 // mongoose
-dbString = ENV['MONGODB_URI'] || 'mongodb://localhost/ShiftTech'
+dbString = process.env.MONGODB_URI || 'mongodb://localhost/ShiftTech'
 mongoose.connect(dbString);
 
 // user schema/model
