@@ -42,20 +42,23 @@ var getTwitterToken = function(userid){
  return deferred.promise;
 }
 
-var getWunderlistToken = function(userid){
-  var deferred = Q.defer()
-   UserAccount.findOne({ 'userid': userid, type:'wunderlist' }, function (err, userwlToken) {
+var getWunderlistToken = function(userid, callback){
+  // var deferred = Q.defer()
+   UserAccount.findOne({ 'userid': userid, type:'Wunderlist' }, function (err, userwlToken) {
     if (err){
-      deferred.reject(err);
+      callback(err)
+      // deferred.reject(err);
     }else{
       var token = userwlToken.accessToken;
-      deferred.resolve({wunderlistAccessToken : token});
+      callback(token);
+      // deferred.resolve({wunderlistAccessToken : token});
     }
   });
- return deferred.promise;
+ // return deferred.promise;
 }
 
 module.exports = {
   getUser : getUser,
-  getFbToken : getFbToken
+  getFbToken : getFbToken,
+  getWunderlistToken : getWunderlistToken
 };

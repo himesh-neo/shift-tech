@@ -1,5 +1,5 @@
 var request = require('request');
-
+var UserDao = require('../dao/userDao');
 // var accessToken;
 var clientId = '9c6bff44918999297f94';
 var basePath = 'http://a.wunderlist.com/api/v1'
@@ -10,50 +10,50 @@ module.exports = {
 
   performService: function(serviceConf, user, callback){
     console.log(user);
-    serviceConf.access_token = 'c215be261e99e61a769b9f1578dba564e73d1d22dcadc4596b3a46626859' // user.wunderlistToken
-    setup(serviceConf.access_token);
-    findOrCreateList(serviceConf.list, function(listId){
-      console.log('this is list id - ', listId);
-      serviceConf.listId = listId;
-      switch(serviceConf.service){
-        case 'notes_create':
-          createTask(serviceConf.listId, serviceConf.content, function(task){
-            if(task != undefined){
-              resp = generateResponse('Added task ' + task.title, task);
-              callback(resp);
-            }
-          })
-          break;
-        case 'notes_read':
-          getTasks(serviceConf.listId, false, function(tasks){
-            if(tasks != undefined){
-              t = []
-              for(var i = 0; i < tasks.length; i++){
-                t.push(tasks[i].title);
-              }
-              resp = generateResponse('You have  ' + t.join(', ') + 'on your list', tasks);
-              callback(resp);
-            }
-          })
-        case 'note_delete':
-          getTasks(serviceConf.listId, false, function(tasks){
-            if(tasks != undefined){
-              var taskId, revision;
-              for(var i = 0; i < tasks.length; i++){
-                if(tasks[i].title == serviceConf.content){
-                  taskId = tasks[i].id;
-                  revision = tasks[i].revision;
-                }
-              }
-              deleteTask(taskId, revision, function(resp){
-                console.log(resp)
-                resp = generateResponse('Deleted Task ' + serviceConf.content, {});
+    UserDao.getWunderlistToken(user._id, function(token){
+      serviceConf.access_token = token;
+      setup(serviceConf.access_token);
+      findOrCreateList(serviceConf.list, function(listId){
+        serviceConf.listId = listId;
+        switch(serviceConf.service){
+          case 'notes_create':
+            createTask(serviceConf.listId, serviceConf.content, function(task){
+              if(task != undefined){
+                resp = generateResponse('Added task ' + task.title, task);
                 callback(resp);
-              })
-            }
-          })
-
-      }
+              }
+            })
+            break;
+          case 'notes_read':
+            getTasks(serviceConf.listId, false, function(tasks){
+              if(tasks != undefined){
+                t = []
+                for(var i = 0; i < tasks.length; i++){
+                  t.push(tasks[i].title);
+                }
+                resp = generateResponse('You have  ' + t.join(', ') + 'on your list', tasks);
+                callback(resp);
+              }
+            })
+          case 'note_delete':
+            getTasks(serviceConf.listId, false, function(tasks){
+              if(tasks != undefined){
+                var taskId, revision;
+                for(var i = 0; i < tasks.length; i++){
+                  if(tasks[i].title == serviceConf.content){
+                    taskId = tasks[i].id;
+                    revision = tasks[i].revision;
+                  }
+                }
+                deleteTask(taskId, revision, function(resp){
+                  console.log(resp)
+                  resp = generateResponse('Deleted Task ' + serviceConf.content, {});
+                  callback(resp);
+                })
+              }
+            })
+        }
+      })
     })
   },
 
