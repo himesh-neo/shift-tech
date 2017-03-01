@@ -20,7 +20,7 @@ var User = require('./models/user.js');
 var app = express();
 
 // require routes
-var routes = require('./routes/api.js');
+var routes = require('./routes/routes.js');
 var oauthCallbacks = require('./routes/oauthCallbacks.js')
 
 // define middleware
