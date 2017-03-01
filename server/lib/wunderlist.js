@@ -6,9 +6,56 @@ var basePath = 'http://a.wunderlist.com/api/v1'
 var clientSecret = '96f36e3908bb91ee981b7de3b581a8295113c3124bfed0d89ac59081b40b'
 var headers;
 
-
-// function Wunderlist(){}
 module.exports = {
+
+  performService: function(serviceConf, user, callback){
+    console.log(user);
+    serviceConf.access_token = 'c215be261e99e61a769b9f1578dba564e73d1d22dcadc4596b3a46626859' // user.wunderlistToken
+    setup(serviceConf.access_token);
+    findOrCreateList(serviceConf.list, function(listId){
+      console.log('this is list id - ', listId);
+      serviceConf.listId = listId;
+      switch(serviceConf.service){
+        case 'notes_create':
+          createTask(serviceConf.listId, serviceConf.content, function(task){
+            if(task != undefined){
+              resp = generateResponse('Added task ' + task.title, task);
+              callback(resp);
+            }
+          })
+          break;
+        case 'notes_read':
+          getTasks(serviceConf.listId, false, function(tasks){
+            if(tasks != undefined){
+              t = []
+              for(var i = 0; i < tasks.length; i++){
+                t.push(tasks[i].title);
+              }
+              resp = generateResponse('You have  ' + t.join(', ') + 'on your list', tasks);
+              callback(resp);
+            }
+          })
+        case 'note_delete':
+          getTasks(serviceConf.listId, false, function(tasks){
+            if(tasks != undefined){
+              var taskId, revision;
+              for(var i = 0; i < tasks.length; i++){
+                if(tasks[i].title == serviceConf.content){
+                  taskId = tasks[i].id;
+                  revision = tasks[i].revision;
+                }
+              }
+              deleteTask(taskId, revision, function(resp){
+                console.log(resp)
+                resp = generateResponse('Deleted Task ' + serviceConf.content, {});
+                callback(resp);
+              })
+            }
+          })
+
+      }
+    })
+  },
 
   fetchToken: function(code, callback){
     url = 'https://www.wunderlist.com/oauth/access_token'
@@ -34,9 +81,9 @@ function setup(token){
   }
 }
 
-function getLists(){
+function getLists(callback){
   endPoint = '/lists';
-  makeRequest(endPoint, 'GET', {});
+  makeRequest(endPoint, 'GET', {}, callback);
 }
 
 function getListDetails(listId){
@@ -44,15 +91,15 @@ function getListDetails(listId){
   makeRequest(endPoint, 'GET', {});
 }
 
-function createList(title){
+function createList(title, callback){
   endPoint = '/lists';
-  makeRequest(endPoint, 'POST', {"title": title})
+  makeRequest(endPoint, 'POST', {"title": title}, callback);
 }
 
-function updateList(listId, title){
+function updateList(listId, title, revision){
   endPoint = '/lists/' + listId;
   // To Be Implemented
-  revision = WunderList.fetchRevision(listId);
+  // revision = WunderList.fetchRevision(listId);
   makeRequest(endPoint, 'PATCH', {"title": title, "revision": revision})
 }
 
@@ -62,12 +109,12 @@ function deleteList(listId){
   makeRequest(endPoint, 'DELETE', {});
 }
 
-function getTasks(listId, status){
+function getTasks(listId, status, callback){
   endPoint = '/tasks?list_id=' + listId;
   if(status != undefined){
     endPoint = endPoint + '&completed=' + status;
   }
-  makeRequest(endPoint, 'GET', {});
+  makeRequest(endPoint, 'GET', {}, callback);
 }
 
 function getCompletedTasks(listId){
@@ -83,13 +130,13 @@ function getTaskDetails(taskId){
   makeRequest(endPoint, 'GET', {});
 }
 
-function createTask(listId, title){
+function createTask(listId, title, callback){
   endPoint = '/tasks'
   data = {
     "list_id": listId,
     "title": title
   }
-  makeRequest(endPoint, 'POST', data);
+  makeRequest(endPoint, 'POST', data, callback);
 }
 
 //Note - passing list id here will move task to the given list
@@ -104,16 +151,42 @@ function  updateTask(taskId, title, listId){
     data.list_id = listId
   }
   makeRequest(endPoint, 'PATCH', data);
-
 }
 
-function  deleteTask(taskId){
-  revision = WunderTask.getRevision(taskId);
+function  deleteTask(taskId, revision, callback){
   endPoint = '/tasks/' + taskId + '?revision=' + revision;
-  makeRequest(endPoint, 'DELETE', {});
+  makeRequest(endPoint, 'DELETE', {}, callback);
 }
 
-function makeRequest(endPoint, method, data){
+function findOrCreateList(listName, callback){
+  var listId;
+  getLists(function(lists){
+    for(var i = 0; i < lists.length; i ++){
+      if(lists[i].title == listName){
+        listId = lists[i].id;
+      }
+    }
+    if(listId != undefined){
+      callback(listId);
+    } else {
+      createList(listName, function(list){
+        callback(list.id);
+      })
+    }
+  })
+}
+
+function generateResponse(message, data){
+  return {
+    speech: message,
+    displayText: message,
+    data: data,
+    contextOut: '',
+    source: 'Wunderlist'
+  };
+}
+
+function makeRequest(endPoint, method, data, callback){
   console.log(endPoint)
   url = basePath + endPoint
   options = {
@@ -123,7 +196,11 @@ function makeRequest(endPoint, method, data){
     "body": JSON.stringify(data)
   }
   request(options, function(err, resp, body){
-    console.log(body);
+    if(method == 'DELETE' && resp.statusCode == 204){
+      callback({message: 'Delete successful'})
+    } else {
+      callback(JSON.parse(body));
+    }
   })
 }
 

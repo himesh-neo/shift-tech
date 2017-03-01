@@ -23,6 +23,7 @@ var app = express();
 var routes = require('./routes/routes.js');
 var fbroutes = require('./routes/facebookRoute.js');
 var oauthCallbacks = require('./routes/oauthCallbacks.js')
+var api = require('./routes/api')
 
 // define middleware
 app.use(express.static(path.join(__dirname, '../client')));
@@ -50,6 +51,7 @@ app.use('/user/', routes);
 app.use(fbroutes);
 
 app.use('/oauth', oauthCallbacks)
+app.use('/api/v1', api)
 
 app.get('/', function(req, res) {
   res.sendFile(path.join(__dirname, '../client', 'index.html'));
