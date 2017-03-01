@@ -7,6 +7,7 @@ angular.module('myApp').controller('loginController',
       // initial values
       $scope.error = false;
       $scope.disabled = true;
+      $scope.statusString = '';
 
       // call login from service
       AuthService.login($scope.loginForm.username, $scope.loginForm.password)
@@ -38,6 +39,17 @@ angular.module('myApp').controller('logoutController',
       AuthService.logout()
         .then(function () {
           $location.path('/login');
+        });
+
+    };
+
+    $scope.postOnFacebook = function () {
+
+      // call logout from service
+      AuthService.postOnFacebook($scope.statusString)
+        .then(function () {
+          $location.path('/');
+          alert('Posted');
         });
 
     };

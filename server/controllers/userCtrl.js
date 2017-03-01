@@ -1,6 +1,7 @@
 
 var User = require('../models/user.js');
 var passport = require('passport');
+var UserDao = require('../dao/userDao.js');
 
 exports.register = function(req, res) {
   User.register(new User({ username: req.body.username }),
@@ -34,6 +35,7 @@ exports.login = function(req, res, next) {
           err: 'Could not log in user'
         });
       }
+    
       res.status(200).json({
         status: 'Login successful!'
       });

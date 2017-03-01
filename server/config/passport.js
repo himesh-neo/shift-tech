@@ -59,11 +59,13 @@ module.exports = function(passport) {
                     var newUserAccount = new UserAccount();
 
                     // set all of the facebook information in our user model
-                    newUserAccount.facebookId   = profile.id; // set the users facebook id
-                    newUserAccount.facebookbookAccessToken = token; // we will save the token that facebook provides to the user
+                    newUserAccount.profile = {
+                                               facebookId : profile.id,
+                                               expire : null
+                                             };
+                    newUserAccount.accessToken = token; // we will save the token that facebook provides to the user
                     newUserAccount.userid = req.user;
                     newUserAccount.type = 'facebook';
-                    newUserAccount.expire = null;
 
 
                     // save our user to the database

@@ -4,14 +4,15 @@ var Schema = mongoose.Schema;
 
 var Account = new Schema({
   userid: {
-              type: mongoose.Schema.Types.ObjectId,
-              ref: 'User'
-          },
-  facebookbookAccessToken : String,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  accessToken : String,
   type : String,
-  facebookId : String,
-  expire : Date,
-  createdOn : {type: Date, default: Date.now}
+  createdOn : {
+    type: Date, default: Date.now
+  },
+  profile:Object
 });
 
 module.exports = mongoose.model('account', Account);

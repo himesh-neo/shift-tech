@@ -11,7 +11,8 @@ angular.module('myApp').factory('AuthService',
       getUserStatus: getUserStatus,
       login: login,
       logout: logout,
-      register: register
+      register: register,
+      postOnFacebook : postOnFacebook
     });
 
     function isLoggedIn() {
@@ -101,6 +102,32 @@ angular.module('myApp').factory('AuthService',
         // handle success
         .success(function (data, status) {
           if(status === 200 && data.status){
+            deferred.resolve();
+          } else {
+            deferred.reject();
+          }
+        })
+        // handle error
+        .error(function (data) {
+          deferred.reject();
+        });
+
+      // return promise object
+      return deferred.promise;
+
+    }
+
+
+    function postOnFacebook(statusString) {
+
+      // create a new instance of deferred
+      var deferred = $q.defer();
+
+      // send a post request to the server
+      $http.post('/fbPost', {postData : statusString})
+        // handle success
+        .success(function (data, status) {
+          if(status === 200){
             deferred.resolve();
           } else {
             deferred.reject();
