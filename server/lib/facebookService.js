@@ -1,18 +1,31 @@
 var FB = require('fb');
-
+var UserDao = require('../dao/userDao');
 
 module.exports = {
 
   performService: function(serviceConf, user, callback){
 
-    FB.setAccessToken(access_token);
-    FB.api('me/feed', 'post', { message: body }, function (response) {
-      if(!response || response.error) {
-        deferred.reject(response.error);
-      }else{
-        deferred.resolve(response.id);
-      }
+    UserDao.getFbToken(user._id, function(token){
+      FB.setAccessToken(token);
+      FB.api('me/feed', 'post', { message: serviceConf.content }, function (response) {
+        if(!response || response.error) {
+          console.log(response.error);
+        }else{
+          resp = generateResponse('You have successfully posted your status on facebook', response.id);
+          callback(resp);
+        }
+      });
     });
-  }
 
+  }
+}
+
+function generateResponse(message, data){
+  return {
+    speech: message,
+    displayText: message,
+    data: data,
+    contextOut: '',
+    source: 'facebook'
+  };
 }

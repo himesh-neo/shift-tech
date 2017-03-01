@@ -16,17 +16,19 @@ var getUser = function(userid){
  return deferred.promise;
 };
 
-var getFbToken = function(userid){
-  var deferred = Q.defer()
+var getFbToken = function(userid, callback){
+  //var deferred = Q.defer()
    UserAccount.findOne({ 'userid': userid, type:'facebook' }, function (err, userFbToken) {
     if (err){
-      deferred.reject(err);
+      callback(err);
+    //  deferred.reject(err);
     }else{
       var token = userFbToken.accessToken;
-      deferred.resolve({fbAccessToken : token});
+      callback(token);
+    //  deferred.resolve({fbAccessToken : token});
     }
   });
- return deferred.promise;
+ //return deferred.promise;
 }
 
 var getTwitterToken = function(userid){
