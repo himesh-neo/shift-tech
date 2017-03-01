@@ -1,6 +1,7 @@
 var Wunderlist = require('./wunderlist');
 var User = require('../models/user');
 var Facebook = require('./facebookService');
+var Twitter = require('./twitter');
 
 var wunderlistServices = ['note_delete', 'notes_create', 'notes_read', 'notes_update', 'list_delete', 'lists_read', 'lists_create', 'lists_update'];
 var facebookServices = ['facebook'];
@@ -40,6 +41,14 @@ function setFacebookServiceConf(params){
   serviceConf = {
     email: request.body['sessionId']
   };
+}
+
+function setTwitterServiceConf(params){
+  serviceClass = Twitter;
+  serviceConf = {
+    email: request.body['sessionId'],
+    content: params['content']
+  }
 }
 
 function setWunderlistServiceConf(params){

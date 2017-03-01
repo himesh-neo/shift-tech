@@ -29,17 +29,18 @@ var getFbToken = function(userid){
  return deferred.promise;
 }
 
-var getTwitterToken = function(userid){
-  var deferred = Q.defer()
-   UserAccount.findOne({ 'userid': userid, type:'twitter' }, function (err, userTwitterToken) {
+var getTwitterTokens = function(userid, callback){
+   UserAccount.findOne({ 'userid': userid, type:'Twitter' }, function (err, userTwitterToken) {
     if (err){
-      deferred.reject(err);
+      callback(err)
     }else{
-      var token = userTwitterToken.accessToken;
-      deferred.resolve({twitterAccessToken : token});
+      var tokens ={
+        access_token: userTwitterToken.accessToken,
+        token_secret: userTwitterToken.profile.tokenSecret
+      };
+      callback(tokens);
     }
   });
- return deferred.promise;
 }
 
 var getWunderlistToken = function(userid, callback){
@@ -60,5 +61,6 @@ var getWunderlistToken = function(userid, callback){
 module.exports = {
   getUser : getUser,
   getFbToken : getFbToken,
-  getWunderlistToken : getWunderlistToken
+  getWunderlistToken : getWunderlistToken,
+  getTwitterTokens : getTwitterTokens
 };
