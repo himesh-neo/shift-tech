@@ -19,7 +19,7 @@ User.statics.connectWunderlistAccount = function(code, user){
   console.log(user);
   UserMod = this;
   Wunderlist.fetchToken(code, function(token){
-    Account.findOneAndUpdate({userid: user._id, type: 'Wunderlist'}, {token: token}, {upsert: true, new: true}, function(err, account){
+    Account.findOneAndUpdate({userid: user._id, type: 'Wunderlist'}, {accessToken: token}, {upsert: true, new: true}, function(err, account){
       if(err){
         console.log(err)
       } else {
