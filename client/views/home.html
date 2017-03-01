@@ -2,8 +2,21 @@
 
 <div ng-controller="logoutController">
   <a ng-click='logout()' class="btn btn-default">Logout</a>
+</div>
+
+<div class="container">
+
+    <div class="jumbotron text-center">
+        <h1><span class="fa fa-lock"></span> Facebook Authentication</h1>
+
+        <p>Register with:</p>
+
+        <a href="/auth/facebook" class="btn btn-primary"><span class="fa fa-facebook"></span> Facebook</a>
+
+    </div>
 
   <div class='row'>
       <a class='btn btn-info text-center' href="https://www.wunderlist.com/oauth/authorize?client_id=9c6bff44918999297f94&redirect_uri=http://localhost:3000/oauth/wunderlistCallback&state=testoauthcallback123123">Connect Wunderlist</a>
     </div>
+
 </div>

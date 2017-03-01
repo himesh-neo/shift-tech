@@ -32,9 +32,7 @@ User.statics.connectWunderlistAccount = function(code, user){
         })
       }
     })
-
   });
 }
-
 
 module.exports = mongoose.model('users', User);
