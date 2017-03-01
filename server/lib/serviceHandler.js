@@ -1,15 +1,15 @@
 var Wunderlist = require('./wunderlist');
-var User = require('../models/user')
+var User = require('../models/user');
+var Facebook = require('./facebookService');
 
 var wunderlistServices = ['note_delete', 'notes_create', 'notes_read', 'notes_update', 'list_delete', 'lists_read', 'lists_create', 'lists_update'];
 var facebookServices = ['facebook'];
 var twitterServices = ['twitter'];
-var request, serviceDetails, response, serviceClass;
+var request, serviceClass;
 var serviceConf = {}
 
 exports.setup = function(req){
   request = req;
-  response = {};
 }
 
 exports.determineService = function(){
@@ -18,7 +18,7 @@ exports.determineService = function(){
 }
 
 exports.performService = function(callback){
-  user = User.findById(serviceConf.userId, function(err, user){
+  user = User.findOne({email: serviceConf.email}, function(err, user){
     serviceClass.performService(serviceConf, user, callback);
   });
 }
@@ -28,16 +28,23 @@ function setServiceConf(params){
     setFacebookServiceConf(params)
   } else {
     if(params['twitter'] != '' && params['twitter'] != undefined){
-      setFacebookServiceConf(params)
+      setTwitterServiceConf(params)
     } else {
       setWunderlistServiceConf(params);
     }
   }
 }
 
+function setFacebookServiceConf(params){
+  serviceClass = Facebook;
+  serviceConf = {
+    email: request.body['sessionId']
+  };
+}
+
 function setWunderlistServiceConf(params){
   var conf = {
-    userId: request.headers['userId']
+    email: request.body['sessionId']
   };
   serviceClass = Wunderlist;
   if(params['list'] != '' && params['list'] != undefined){
@@ -56,5 +63,4 @@ function setWunderlistServiceConf(params){
     }
   }
   serviceConf = conf;
-  console.log(serviceConf);
 }
