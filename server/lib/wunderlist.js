@@ -1,9 +1,9 @@
 var request = require('request');
 var UserDao = require('../dao/userDao');
 // var accessToken;
-var clientId = '9c6bff44918999297f94';
+var clientId = '639e76137806e752a65c';
 var basePath = 'http://a.wunderlist.com/api/v1'
-var clientSecret = '96f36e3908bb91ee981b7de3b581a8295113c3124bfed0d89ac59081b40b'
+var clientSecret = '29883eb23f0f09dd3a225743480b235121b3a689f64c1ffebf92dec4b82c'
 var headers;
 
 module.exports = {
