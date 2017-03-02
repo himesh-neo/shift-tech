@@ -37,7 +37,8 @@ function generateResponse(message, data){
     speech: message,
     displayText: message,
     data: data,
-    contextOut: '',
-    source: 'Twitter'
+    contextOut: [],
+    source: 'Twitter',
+    followupEvent: {}
   };
 }

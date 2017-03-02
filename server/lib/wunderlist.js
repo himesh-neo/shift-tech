@@ -187,8 +187,9 @@ function generateResponse(message, data){
     speech: message,
     displayText: message,
     data: data,
-    contextOut: '',
-    source: 'Wunderlist'
+    contextOut: [],
+    source: 'Wunderlist',
+    followupEvent: {}
   };
 }
 
