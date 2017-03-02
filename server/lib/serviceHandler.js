@@ -20,7 +20,12 @@ exports.determineService = function(){
 
 exports.performService = function(callback){
   user = User.findOne({username: serviceConf.email}, function(err, user){
-    serviceClass.performService(serviceConf, user, callback);
+    if(!user){
+      var errMessage = 'User not found';
+      callback(errMessage);
+    }else{
+      serviceClass.performService(serviceConf, user, callback);
+    }
   });
 }
 
