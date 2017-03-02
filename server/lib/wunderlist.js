@@ -35,6 +35,7 @@ module.exports = {
                 callback(resp);
               }
             })
+            break;
           case 'note_delete':
             getTasks(serviceConf.listId, false, function(tasks){
               if(tasks != undefined){
@@ -52,6 +53,7 @@ module.exports = {
                 })
               }
             })
+            break;
         }
       })
     })
