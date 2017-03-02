@@ -10,7 +10,7 @@ module.exports = {
     'twitterAuth' : {
         'consumerKey'       : 'i5dsdrVLpDy90hvlnJg4uj2ke',
         'consumerSecret'    : 'UhI89YHxEOzkmlLSpZ7owYcGS7Ob18M7Og2Yd0CNZwKJ64Y36H',
-        'callbackURL'       : 'http://localhost:3000/auth/twitter/callback'
+        'callbackURL'       : 'http://connected-back.herokuapp.com/auth/twitter/callback'
     },
 
     'googleAuth' : {
