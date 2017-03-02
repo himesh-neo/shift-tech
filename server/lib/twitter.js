@@ -6,9 +6,6 @@ var client = new Twitter({
   consumer_secret: 'UhI89YHxEOzkmlLSpZ7owYcGS7Ob18M7Og2Yd0CNZwKJ64Y36H'
 });
 
-
-
-
 exports.performService = function(serviceConf, user, callback){
   UserDao.getTwitterTokens(user._id, function(tokens){
     client.access_token_secret = tokens.access_token;
@@ -18,6 +15,7 @@ exports.performService = function(serviceConf, user, callback){
 }
 
 function tweet(client, content, callback){
+  console.log(client);
   client.post('statuses/update', {status: content},  function(error, tweet, response) {
     if(error){
       console.log(error);
