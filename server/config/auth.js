@@ -4,7 +4,7 @@ module.exports = {
     'facebookAuth' : {
         'clientID'      : '265226530572106', // your App ID
         'clientSecret'  : '6203a21710bc37ee8523568bbb6abb9b', // your App Secret
-        'callbackURL'   : ' http://connected-back.herokuapp.com/auth/facebook/callback'
+        'callbackURL'   : ' https://connected-back.herokuapp.com/auth/facebook/callback'
     },
 
     'twitterAuth' : {
