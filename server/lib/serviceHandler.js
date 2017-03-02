@@ -33,14 +33,14 @@ exports.performService = function(callback){
 function setServiceConf(params){
   console.log('setting up conf....')
   console.log(params)
-  if(params['facebook'] != '' && params['facebook'] != undefined){
+  if(params['facebook'] != undefined){
     setFacebookServiceConf(params)
-  } else {
-    if(params['twitter'] != '' && params['twitter'] != undefined){
-      setTwitterServiceConf(params)
-    } else {
-      setWunderlistServiceConf(params);
-    }
+  }
+  if(params['twitter'] != undefined){
+    setTwitterServiceConf(params)
+  }
+  if(params['list'] != undefined){
+    setWunderlistServiceConf(params);
   }
 }
 
