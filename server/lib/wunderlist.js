@@ -13,7 +13,9 @@ module.exports = {
     UserDao.getWunderlistToken(user._id, function(token){
       serviceConf.access_token = token;
       setup(serviceConf.access_token);
+      console.log('1');
       findOrCreateList(serviceConf.list, function(listId){
+        console.log('2');
         serviceConf.listId = listId;
         switch(serviceConf.service){
           case 'notes_create':
@@ -163,6 +165,7 @@ function  deleteTask(taskId, revision, callback){
 function findOrCreateList(listName, callback){
   var listId;
   getLists(function(lists){
+    console.lists('got lists');
     for(var i = 0; i < lists.length; i ++){
       if(lists[i].title == listName){
         listId = lists[i].id;
@@ -172,6 +175,7 @@ function findOrCreateList(listName, callback){
       callback(listId);
     } else {
       createList(listName, function(list){
+        console.log('created list');
         callback(list.id);
       })
     }
