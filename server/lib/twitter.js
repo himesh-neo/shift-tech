@@ -1,23 +1,26 @@
 var Twitter = require('twitter');
 var UserDao = require('../dao/userDao');
 
-var client = new Twitter({
-  consumer_key: 'i5dsdrVLpDy90hvlnJg4uj2ke',
-  consumer_secret: 'UhI89YHxEOzkmlLSpZ7owYcGS7Ob18M7Og2Yd0CNZwKJ64Y36H'
-});
-
-
-
+var client;
 
 exports.performService = function(serviceConf, user, callback){
   UserDao.getTwitterTokens(user._id, function(tokens){
-    client.access_token_secret = tokens.access_token;
-    client.access_token_secret = tokens.token_secret
+    setupClient(tokens.access_token, tokens.token_secret)
     tweet(client, serviceConf.content, callback)
   })
 }
 
+function setupClient(access_token, access_token_secret){
+  client = new Twitter({
+    consumer_key: 'i5dsdrVLpDy90hvlnJg4uj2ke',
+    consumer_secret: 'UhI89YHxEOzkmlLSpZ7owYcGS7Ob18M7Og2Yd0CNZwKJ64Y36H',
+    access_token_key: access_token,
+    access_token_secret: access_token_secret
+  });
+}
+
 function tweet(client, content, callback){
+  console.log(client);
   client.post('statuses/update', {status: content},  function(error, tweet, response) {
     if(error){
       console.log(error);
@@ -35,6 +38,6 @@ function generateResponse(message, data){
     displayText: message,
     data: data,
     contextOut: '',
-    source: 'Wunderlist'
+    source: 'Twitter'
   };
 }
