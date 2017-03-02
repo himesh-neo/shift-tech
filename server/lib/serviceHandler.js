@@ -19,7 +19,6 @@ exports.determineService = function(){
 }
 
 exports.performService = function(callback){
-  console.log(serviceClass);
   console.log(serviceConf);
   user = User.findOne({username: serviceConf.email}, function(err, user){
     serviceClass.performService(serviceConf, user, callback);
