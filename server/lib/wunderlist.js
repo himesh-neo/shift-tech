@@ -165,7 +165,7 @@ function  deleteTask(taskId, revision, callback){
 function findOrCreateList(listName, callback){
   var listId;
   getLists(function(lists){
-    console.lists('got lists');
+    console.log('got lists');
     for(var i = 0; i < lists.length; i ++){
       if(lists[i].title == listName){
         listId = lists[i].id;
