@@ -19,12 +19,16 @@ exports.determineService = function(){
 }
 
 exports.performService = function(callback){
+  console.log(serviceClass);
+  console.log(serviceConf);
   user = User.findOne({username: serviceConf.email}, function(err, user){
     serviceClass.performService(serviceConf, user, callback);
   });
 }
 
 function setServiceConf(params){
+  console.log('setting up conf....')
+  console.log(params)
   if(params['facebook'] != '' && params['facebook'] != undefined){
     setFacebookServiceConf(params)
   } else {
@@ -65,7 +69,6 @@ function setWunderlistServiceConf(params){
   conf.content = params['content'];
   conf.services = []
   for(var i = 0; i < wunderlistServices.length; i++){
-    console.log(wunderlistServices[i])
     var service = wunderlistServices[i];
     if(params[service] != '' && params[service] != undefined){
       conf.services.push(service)
