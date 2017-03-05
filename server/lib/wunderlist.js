@@ -1,61 +1,80 @@
 var request = require('request');
 var UserDao = require('../dao/userDao');
 // var accessToken;
-var clientId = '639e76137806e752a65c';
+var clientId = '9c6bff44918999297f94';
 var basePath = 'http://a.wunderlist.com/api/v1'
-var clientSecret = '29883eb23f0f09dd3a225743480b235121b3a689f64c1ffebf92dec4b82c'
+var clientSecret = '96f36e3908bb91ee981b7de3b581a8295113c3124bfed0d89ac59081b40b'
 var headers;
 
 module.exports = {
 
   performService: function(serviceConf, user, callback){
-    console.log(user);
     UserDao.getWunderlistToken(user._id, function(token){
       serviceConf.access_token = token;
       setup(serviceConf.access_token);
-      console.log('1');
-      findOrCreateList(serviceConf.list, function(listId){
-        console.log('2');
-        serviceConf.listId = listId;
-        switch(serviceConf.service){
-          case 'notes_create':
-            createTask(serviceConf.listId, serviceConf.content, function(task){
-              if(task != undefined){
-                resp = generateResponse('Added task ' + task.title, task);
-                callback(resp);
-              }
-            })
-            break;
-          case 'notes_read':
-            getTasks(serviceConf.listId, false, function(tasks){
-              if(tasks != undefined){
-                t = []
-                for(var i = 0; i < tasks.length; i++){
-                  t.push(tasks[i].title);
-                }
-                resp = generateResponse('You have  ' + t.join(', ') + 'on your list', tasks);
-                callback(resp);
-              }
-            })
-            break;
-          case 'note_delete':
-            getTasks(serviceConf.listId, false, function(tasks){
-              if(tasks != undefined){
-                var taskId, revision;
-                for(var i = 0; i < tasks.length; i++){
-                  if(tasks[i].title == serviceConf.content){
-                    taskId = tasks[i].id;
-                    revision = tasks[i].revision;
+      findOrCreateList(serviceConf.list, function(err, listId){
+        if(err){
+          callback(err)
+        } else {
+          serviceConf.listId = listId;
+          switch(serviceConf.service){
+            case 'notes_create':
+            case 'notes_update':
+              createTask(serviceConf.listId, serviceConf.content, function(err, task){
+                if(err){
+                  callback(err)
+                } else {
+                  if(task != undefined){
+                    resp = generateResponse('Added task ' + task.title, task);
+                    callback(resp);
                   }
                 }
-                deleteTask(taskId, revision, function(resp){
-                  console.log(resp)
-                  resp = generateResponse('Deleted Task ' + serviceConf.content, {});
-                  callback(resp);
-                })
-              }
-            })
-            break;
+              })
+              break;
+            case 'notes_read':
+              getTasks(serviceConf.listId, false, function(err, tasks){
+                if(err){
+                  callback(err);
+                } else {
+                  if(tasks != undefined){
+                    t = []
+                    for(var i = 0; i < tasks.length; i++){
+                      t.push(tasks[i].title);
+                    }
+                    resp = generateResponse('You have  ' + t.join(', ') + 'on your list', tasks);
+                    callback(resp);
+                  }
+
+                }
+              })
+              break;
+            case 'note_delete':
+              getTasks(serviceConf.listId, false, function(err, tasks){
+                if(err){
+                  callback(err);
+                } else {
+                  if(tasks != undefined){
+                    var taskId, revision;
+                    for(var i = 0; i < tasks.length; i++){
+                      if(tasks[i].title == serviceConf.content){
+                        taskId = tasks[i].id;
+                        revision = tasks[i].revision;
+                      }
+                    }
+                    deleteTask(taskId, revision, function(err, resp){
+                      if(err){
+                        callback(err);
+                      } else {
+                        console.log(resp)
+                        resp = generateResponse('Deleted Task ' + serviceConf.content, {});
+                        callback(null, resp);
+                      }
+                    })
+                  }
+                }
+              })
+              break;
+          }
         }
       })
     })
@@ -135,6 +154,7 @@ function getTaskDetails(taskId){
 }
 
 function createTask(listId, title, callback){
+  console.log('creating task....!!!')
   endPoint = '/tasks'
   data = {
     "list_id": listId,
@@ -146,7 +166,7 @@ function createTask(listId, title, callback){
 //Note - passing list id here will move task to the given list
 function  updateTask(taskId, title, listId){
   endPoint = '/tasks/' + taskId;
-  revision = WunderTask.getRevision(taskId);
+  revision = WuenderTask.getRevision(taskId);
   data = {
     "title": title,
     "revision": revision
@@ -164,20 +184,27 @@ function  deleteTask(taskId, revision, callback){
 
 function findOrCreateList(listName, callback){
   var listId;
-  getLists(function(lists){
-    console.log('got lists');
-    for(var i = 0; i < lists.length; i ++){
-      if(lists[i].title == listName){
-        listId = lists[i].id;
-      }
-    }
-    if(listId != undefined){
-      callback(listId);
+  getLists(function(err, lists){
+    if(err){
+      callback(err);
     } else {
-      createList(listName, function(list){
-        console.log('created list');
-        callback(list.id);
-      })
+      for(var i = 0; i < lists.length; i ++){
+        if(lists[i].title == listName){
+          listId = lists[i].id;
+        }
+      }
+      if(listId != undefined){
+        callback(null, listId);
+      } else {
+        createList(listName, function(err, list){
+          if(err){
+            callback(err);
+          } else {
+            console.log('created list');
+            callback(null, list.id);
+          }
+        })
+      }
     }
   })
 }
@@ -204,9 +231,16 @@ function makeRequest(endPoint, method, data, callback){
   }
   request(options, function(err, resp, body){
     if(method == 'DELETE' && resp.statusCode == 204){
-      callback({message: 'Delete successful'})
+      callback(null, {message: 'Delete successful'})
     } else {
-      callback(JSON.parse(body));
+      respBody = JSON.parse(body)
+      console.log(respBody);
+      if(err || respBody["unauthorized"]){
+        callback(respBody);
+      } else {
+        callback(null, JSON.parse(body));
+
+      }
     }
   })
 }

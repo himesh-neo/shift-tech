@@ -20,15 +20,13 @@ function setupClient(access_token, access_token_secret){
 }
 
 function tweet(client, content, callback){
-  console.log(client);
   client.post('statuses/update', {status: content},  function(error, tweet, response) {
     if(error){
-      console.log(error);
+      callback(error);
+    } else {
+      resp = generateResponse('Posted tweet saying ' + tweet.text, {});
+      callback(null, resp);
     }
-    resp = generateResponse('Posted tweet saying ' + tweet.text, {});
-    callback(resp)
-    // console.log(tweet);  // Tweet body.
-    // console.log(response);  // Raw response object.
   });
 }
 

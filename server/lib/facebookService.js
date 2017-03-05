@@ -10,9 +10,10 @@ module.exports = {
       FB.api('me/feed', 'post', { message: serviceConf.content }, function (response) {
         if(!response || response.error) {
           console.log(response.error);
+          callback(response.error)
         }else{
           resp = generateResponse('You have successfully posted your status on facebook', response.id);
-          callback(resp);
+          callback(null, resp);
         }
       });
     });
