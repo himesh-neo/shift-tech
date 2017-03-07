@@ -2,6 +2,7 @@ var Wunderlist = require('./wunderlist');
 var User = require('../models/user');
 var Facebook = require('./facebookService');
 var Twitter = require('./twitter');
+var Q = require('q');
 
 var wunderlistServices = ['note_delete', 'notes_create', 'notes_read', 'notes_update', 'list_delete', 'lists_read', 'lists_create', 'lists_update'];
 var facebookServices = ['facebook'];
@@ -11,27 +12,35 @@ var serviceConf = {}
 
 exports.setup = function(req){
   request = req;
+  console.log('setyup....')
 }
 
 exports.determineService = function(){
   var params = request.body.result.parameters
   setServiceConf(params);
+  console.log('datermine service....')
 }
 
-exports.performService = function(callback){
+exports.performService = function(){
   console.log(serviceConf);
+  deferred = Q.defer()
   user = User.findOne({username: serviceConf.email}, function(err, user){
     if(err){
-      callback(err);
+      deferred.reject(err);
     } else{
       if(!user){
         var errMessage = 'User not found';
-        callback(errMessage);
+        deferred.reject(errMessage);
       }else{
-        serviceClass.performService(serviceConf, user, callback);
+        serviceClass.performService(serviceConf, user).then(function(resp){
+          console.log('this is response to endpoint.....')
+          console.log(resp)
+          deferred.resolve( resp );
+        })
       }
     }
   });
+  return deferred.promise;
 }
 
 function setServiceConf(params){
@@ -83,5 +92,7 @@ function setWunderlistServiceConf(params){
       conf.service = service;
     }
   }
+  console.log('this is the conf.....');
+  console.log(conf);
   serviceConf = conf;
 }

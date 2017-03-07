@@ -15,23 +15,28 @@ var User = new Schema({
 
 User.plugin(passportLocalMongoose);
 
-User.statics.connectWunderlistAccount = function(code, user){
+User.statics.connectWunderlistAccount = function(code, user, callback){
   console.log(user);
   UserMod = this;
-  Wunderlist.fetchToken(code, function(token){
-    Account.findOneAndUpdate({userid: user._id, type: 'Wunderlist'}, {accessToken: token}, {upsert: true, new: true}, function(err, account){
-      if(err){
-        console.log(err)
-      } else {
-        UserMod.update({id: account.user_id},{wunderlistConnected: true}, {}, function(err, user){
-          if(err){
-            console.log(err)
-          } else {
-           console.log('Wunderlist connected...!!!')
-          }
-        })
-      }
-    })
+  Wunderlist.fetchToken(code, function(err, token){
+    if(err){
+      callback(err);
+    } else {
+      Account.findOneAndUpdate({userid: user._id, type: 'Wunderlist'}, {accessToken: token}, {upsert: true, new: true}, function(err, account){
+        if(err){
+          console.log(err)
+        } else {
+          UserMod.update({id: account.user_id},{wunderlistConnected: true}, {}, function(err, user){
+            if(err){
+              console.log(err)
+            } else {
+             console.log('Wunderlist connected...!!!')
+             callback(null, user);
+            }
+          })
+        }
+      })
+    }
   });
 }
 

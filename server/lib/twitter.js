@@ -4,10 +4,10 @@ var UserDao = require('../dao/userDao');
 var client;
 
 exports.performService = function(serviceConf, user, callback){
-  UserDao.getTwitterTokens(user._id, function(tokens){
-    setupClient(tokens.access_token, tokens.token_secret)
-    tweet(client, serviceConf.content, callback)
-  })
+  UserDao.getTwitterTokens(user._id).then(function(tokens){
+    setupClient(tokens.access_token, tokens.token_secret);
+    tweet(client, serviceConf.content, callback);
+  });
 }
 
 function setupClient(access_token, access_token_secret){

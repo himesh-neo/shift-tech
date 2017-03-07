@@ -31,33 +31,45 @@ var getFbToken = function(userid, callback){
  //return deferred.promise;
 }
 
-var getTwitterTokens = function(userid, callback){
-   UserAccount.findOne({ 'userid': userid, type:'Twitter' }, function (err, userTwitterToken) {
-    if (err){
-      callback(err)
-    }else{
-      var tokens ={
+// var getTwitterTokens = function(userid, callback){
+//    UserAccount.findOne({ 'userid': userid, type:'Twitter' }, function (err, userTwitterToken) {
+//     if (err){
+//       callback(err)
+//     }else{
+//       var tokens ={
+//         access_token: userTwitterToken.accessToken,
+//         token_secret: userTwitterToken.profile.tokenSecret
+//       };
+//       callback(tokens);
+//     }
+//   });
+// }
+
+var getTwitterTokens = function(userId){
+  var deferred = Q.defer()
+  UserAccount.findOne({'userid': userId, type: 'Twitter'}, function(err, userTwitterToken){
+    if(err) deferred.reject(err);
+    else {
+      var tokens = {
         access_token: userTwitterToken.accessToken,
         token_secret: userTwitterToken.profile.tokenSecret
       };
-      callback(tokens);
+      deferred.resolve(tokens)
     }
-  });
+  })
+  return deferred.promise;
 }
 
 var getWunderlistToken = function(userid, callback){
-  // var deferred = Q.defer()
+  var deferred = Q.defer()
    UserAccount.findOne({ 'userid': userid, type:'Wunderlist' }, function (err, userwlToken) {
-    if (err){
-      callback(err)
-      // deferred.reject(err);
-    }else{
+    if (err) deferred.reject(err)
+    else{
       var token = userwlToken.accessToken;
-      callback(token);
-      // deferred.resolve({wunderlistAccessToken : token});
+      deferred.resolve(token);
     }
   });
- // return deferred.promise;
+ return deferred.promise;
 }
 
 module.exports = {

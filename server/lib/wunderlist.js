@@ -1,5 +1,6 @@
 var request = require('request');
 var UserDao = require('../dao/userDao');
+var Q = require('q');
 // var accessToken;
 var clientId = '639e76137806e752a65c';
 var basePath = 'http://a.wunderlist.com/api/v1'
@@ -8,76 +9,20 @@ var headers;
 
 module.exports = {
 
-  performService: function(serviceConf, user, callback){
-    UserDao.getWunderlistToken(user._id, function(token){
-      serviceConf.access_token = token;
-      setup(serviceConf.access_token);
-      findOrCreateList(serviceConf.list, function(err, listId){
-        if(err){
-          callback(err)
-        } else {
-          serviceConf.listId = listId;
-          switch(serviceConf.service){
-            case 'notes_create':
-            case 'notes_update':
-              createTask(serviceConf.listId, serviceConf.content, function(err, task){
-                if(err){
-                  callback(err)
-                } else {
-                  if(task != undefined){
-                    resp = generateResponse('Added task ' + task.title, task);
-                    callback(resp);
-                  }
-                }
-              })
-              break;
-            case 'notes_read':
-              getTasks(serviceConf.listId, false, function(err, tasks){
-                if(err){
-                  callback(err);
-                } else {
-                  if(tasks != undefined){
-                    t = []
-                    for(var i = 0; i < tasks.length; i++){
-                      t.push(tasks[i].title);
-                    }
-                    resp = generateResponse('You have  ' + t.join(', ') + 'on your list', tasks);
-                    callback(resp);
-                  }
+  performService: function(serviceConf, user){
+    deferred = Q.defer()
+    UserDao.getWunderlistToken(user._id).then(function(token){
 
-                }
-              })
-              break;
-            case 'note_delete':
-              getTasks(serviceConf.listId, false, function(err, tasks){
-                if(err){
-                  callback(err);
-                } else {
-                  if(tasks != undefined){
-                    var taskId, revision;
-                    for(var i = 0; i < tasks.length; i++){
-                      if(tasks[i].title == serviceConf.content){
-                        taskId = tasks[i].id;
-                        revision = tasks[i].revision;
-                      }
-                    }
-                    deleteTask(taskId, revision, function(err, resp){
-                      if(err){
-                        callback(err);
-                      } else {
-                        console.log(resp)
-                        resp = generateResponse('Deleted Task ' + serviceConf.content, {});
-                        callback(null, resp);
-                      }
-                    })
-                  }
-                }
-              })
-              break;
-          }
-        }
+      setup(token);
+      findOrCreateList(serviceConf.list).then(function(listId){
+        console.log('list found...!!!')
+          serviceConf.listId = listId;
+          performSelectedService(serviceConf).then(function(resp){
+            deferred.resolve(resp)
+          })
       })
     })
+    return deferred.promise
   },
 
   fetchToken: function(code, callback){
@@ -90,7 +35,7 @@ module.exports = {
       method: 'POST'
     }
     request(options, function(err, resp, body){
-      callback(JSON.parse(body).access_token);
+      callback(err, JSON.parse(body).access_token);
     })
   }
 
@@ -106,7 +51,7 @@ function setup(token){
 
 function getLists(callback){
   endPoint = '/lists';
-  makeRequest(endPoint, 'GET', {}, callback);
+  return makeRequest(endPoint, 'GET', {}, callback);
 }
 
 function getListDetails(listId){
@@ -114,9 +59,9 @@ function getListDetails(listId){
   makeRequest(endPoint, 'GET', {});
 }
 
-function createList(title, callback){
+function createList(title){
   endPoint = '/lists';
-  makeRequest(endPoint, 'POST', {"title": title}, callback);
+  makeRequest(endPoint, 'POST', {"title": title});
 }
 
 function updateList(listId, title, revision){
@@ -153,14 +98,14 @@ function getTaskDetails(taskId){
   makeRequest(endPoint, 'GET', {});
 }
 
-function createTask(listId, title, callback){
+function createTask(listId, title){
   console.log('creating task....!!!')
   endPoint = '/tasks'
   data = {
     "list_id": listId,
     "title": title
   }
-  makeRequest(endPoint, 'POST', data, callback);
+  return makeRequest(endPoint, 'POST', data);
 }
 
 //Note - passing list id here will move task to the given list
@@ -184,32 +129,102 @@ function  deleteTask(taskId, revision, callback){
 
 function findOrCreateList(listName, callback){
   var listId;
-  getLists(function(err, lists){
+  var deferred = Q.defer()
+  getLists().then(function(lists){
+    for(var i = 0; i < lists.length; i ++){
+      if(lists[i].title == listName){
+        listId = lists[i].id;
+      }
+    }
+    if(listId != undefined){
+      deferred.resolve(listId);
+    } else {
+      createList(listName).then(function(list){
+        console.log('created list');
+        deferred.resolve(list.id);
+      })
+    }
+  
+  })
+  return deferred.promise;
+}
+
+function notesCreateOrUpdate(serviceConf){
+  var deferred = Q.defer()
+  createTask(serviceConf.listId, serviceConf.content).
+    then(function(task){
+      if(task != undefined){
+        console.log('resolving this.....')
+        resp = generateResponse('Added task ' + task.title, task);
+        deferred.resolve(resp);
+        return resp;
+      }
+    })
+    return deferred.promise;
+}
+
+function notesRead(serviceConf, callback){
+  getTasks(serviceConf.listId, false, function(err, tasks){
     if(err){
       callback(err);
     } else {
-      for(var i = 0; i < lists.length; i ++){
-        if(lists[i].title == listName){
-          listId = lists[i].id;
+      if(tasks != undefined){
+        t = []
+        for(var i = 0; i < tasks.length; i++){
+          t.push(tasks[i].title);
         }
+        resp = generateResponse('You have  ' + t.join(', ') + 'on your list', tasks);
+        callback(resp);
       }
-      if(listId != undefined){
-        callback(null, listId);
-      } else {
-        createList(listName, function(err, list){
-          if(err){
-            callback(err);
-          } else {
-            console.log('created list');
-            callback(null, list.id);
-          }
-        })
-      }
+
     }
   })
 }
 
+function notesDelete(serviceConf, callback){
+  getTasks(serviceConf.listId, false, function(err, tasks){
+    if(err){
+      callback(err);
+    } else {
+      if(tasks != undefined){
+        var taskId, revision;
+        for(var i = 0; i < tasks.length; i++){
+          if(tasks[i].title == serviceConf.content){
+            taskId = tasks[i].id;
+            revision = tasks[i].revision;
+          }
+        }
+        deleteTask(taskId, revision, function(err, resp){
+          if(err){
+            callback(err);
+          } else {
+            console.log(resp)
+            resp = generateResponse('Deleted Task ' + serviceConf.content, {});
+            callback(null, resp);
+          }
+        })
+      }
+    }
+  });
+}
+
+function performSelectedService(serviceConf){
+  switch(serviceConf.service){
+    case 'notes_create':
+    case 'notes_update':
+      return notesCreateOrUpdate(serviceConf);
+      break;
+    case 'notes_read':
+      notesRead(serviceConf, callback);
+      break;
+    case 'note_delete':
+      notesDelete(serviceConf, callback)
+      break;
+  }
+}
+
 function generateResponse(message, data){
+  console.log('hello thjere./.......')
   return {
     speech: message,
     displayText: message,
@@ -220,7 +235,8 @@ function generateResponse(message, data){
   };
 }
 
-function makeRequest(endPoint, method, data, callback){
+function makeRequest(endPoint, method, data){
+  var deferred = Q.defer()
   console.log(endPoint)
   url = basePath + endPoint
   options = {
@@ -231,18 +247,18 @@ function makeRequest(endPoint, method, data, callback){
   }
   request(options, function(err, resp, body){
     if(method == 'DELETE' && resp.statusCode == 204){
-      callback(null, {message: 'Delete successful'})
+      deferred.resolve({message: 'Delete successful'})
     } else {
       respBody = JSON.parse(body)
       console.log(respBody);
       if(err || respBody["unauthorized"]){
-        callback(respBody);
+        deferred.reject(respBody);
       } else {
-        callback(null, JSON.parse(body));
+        deferred.resolve(JSON.parse(body));
 
       }
     }
   })
+  return deferred.promise;
 }
 
-// setup('4a3aa13ec372ce74d677e98a2eb381ffbddc4cf57a94602407d938207e6d');
