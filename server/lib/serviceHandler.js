@@ -21,25 +21,46 @@ exports.determineService = function(){
   console.log('datermine service....')
 }
 
+// exports.performService = function(){
+//   console.log(serviceConf);
+//   deferred = Q.defer()
+//   user = User.findOne({username: serviceConf.email}, function(err, user){
+//     if(err){
+//       deferred.reject(err);
+//     } else{
+//       if(!user){
+//         var errMessage = 'User not found';
+//         deferred.reject(errMessage);
+//       }else{
+//         serviceClass.performService(serviceConf, user).then(function(resp){
+//           console.log('this is response to endpoint.....')
+//           console.log(resp)
+//           deferred.resolve( resp );
+//         })
+//       }
+//     }
+//   });
+//   return deferred.promise;
+// }
+
+
 exports.performService = function(){
   console.log(serviceConf);
-  deferred = Q.defer()
-  user = User.findOne({username: serviceConf.email}, function(err, user){
-    if(err){
-      deferred.reject(err);
-    } else{
-      if(!user){
+  deferred = Q.defer();
+  User.findOne({username: serviceConf.email})
+	.then(function(user){
+		if(!user){
         var errMessage = 'User not found';
-        deferred.reject(errMessage);
+        return deferred.reject(errMessage);
       }else{
         serviceClass.performService(serviceConf, user).then(function(resp){
-          console.log('this is response to endpoint.....')
-          console.log(resp)
-          deferred.resolve( resp );
+          deferred.resolve(resp);        
         })
       }
-    }
-  });
+	})
+	.catch(function(err){
+		return deferred.reject(err);
+	})
   return deferred.promise;
 }
 
